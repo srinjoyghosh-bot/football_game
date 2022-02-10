@@ -83,7 +83,7 @@ def reset_ball_conditions():
 
 
 def reset_game_conditions():
-    global game_over, is_paused, is_first_half, is_half_time, is_full_time, score_1, score_2,counter
+    global game_over, is_paused, is_first_half, is_half_time, is_full_time, score_1, score_2, counter
     game_over = False
     is_paused = False
     is_first_half = True
@@ -91,7 +91,7 @@ def reset_game_conditions():
     is_full_time = False
     score_1 = 0
     score_2 = 0
-    counter=180
+    counter = 180
 
 
 def show_ball(x, y):
@@ -135,6 +135,17 @@ def show_score(x, y):
     screen.blit(score, (x, y))
 
 
+def show_half_name():
+    global is_first_half
+    pygame.draw.rect(screen, BLACK, (0, 0, 200, 30))
+    if is_first_half:
+        half_name = score_font.render("First Half", True, WHITE)
+        screen.blit(half_name, (0, 0))
+    else:
+        half_name = score_font.render("Second Half", True, WHITE)
+        screen.blit(half_name, (0, 0))
+
+
 def get_time_text(time_left):
     min_left = time_left // 60
     sec_left = time_left - (60 * min_left)
@@ -162,6 +173,10 @@ def show_paused_screen(score_a, score_b, time_left):
     time_text = pause_text_font.render(time_text_string, True, BLACK)
     resume_text = score_font.render(resume_text_string, True, BLACK)
 
+    pygame.draw.rect(screen, BLACK, (score_text_x - 20, score_text_y + 40, 110, 30))  # to hide time
+    pygame.draw.rect(screen, BLACK, (score_text_x, score_text_y, 100, 30))  # to hide score
+    pygame.draw.rect(screen, BLACK, (0, 0, 200, 30))  # to hide half name
+
     screen.blit(pause_text, (WIDTH / 2 - 250, HEIGHT - GROUND_HEIGHT + GROUND_HEIGHT / 2 - 150))
     screen.blit(score_text, (WIDTH / 2 - 65, HEIGHT - GROUND_HEIGHT + GROUND_HEIGHT / 2 - 80))
     screen.blit(time_text, (WIDTH / 2 - 110, HEIGHT - GROUND_HEIGHT + GROUND_HEIGHT / 2 - 10))
@@ -178,6 +193,9 @@ def show_half_end_screen(score_a, score_b):
     screen.blit(pause_text, (WIDTH / 2 - 180, HEIGHT - GROUND_HEIGHT + GROUND_HEIGHT / 2 - 150))
     screen.blit(score_text, (WIDTH / 2 - 65, HEIGHT - GROUND_HEIGHT + GROUND_HEIGHT / 2 - 80))
     screen.blit(resume_text, (WIDTH / 2 - 200, HEIGHT - GROUND_HEIGHT + GROUND_HEIGHT / 2 - 10))
+    pygame.draw.rect(screen, BLACK, (score_text_x - 20, score_text_y + 40, 110, 30))  # to hide time
+    pygame.draw.rect(screen, BLACK, (score_text_x, score_text_y, 100, 30))  # to hide score
+    pygame.draw.rect(screen, BLACK, (0, 0, 200, 30))  # to hide half name
 
 
 def check_winner(score_a, score_b):
@@ -199,6 +217,9 @@ def show_full_time_screen(score_a, score_b):
     screen.blit(winner_text, (WIDTH / 2 - 200, HEIGHT - GROUND_HEIGHT + GROUND_HEIGHT / 2 - 150))
     screen.blit(score_text, (WIDTH / 2 - 65, HEIGHT - GROUND_HEIGHT + GROUND_HEIGHT / 2 - 80))
     screen.blit(restart_text, (WIDTH / 2 - 200, HEIGHT - GROUND_HEIGHT + GROUND_HEIGHT / 2 - 10))
+    pygame.draw.rect(screen, BLACK, (score_text_x - 20, score_text_y + 40, 110, 30))  # to hide time
+    pygame.draw.rect(screen, BLACK, (score_text_x, score_text_y, 100, 30))  # to hide score
+    pygame.draw.rect(screen, BLACK, (0, 0, 200, 30))  # to hide half name
 
 
 while not game_over:
@@ -235,7 +256,7 @@ while not game_over:
                 player2_y_change = 0
             if event.key == pygame.K_SPACE:
                 if not is_paused:
-                    if not is_half_time:
+                    if not is_half_time and not is_full_time:
                         is_paused = True
                     else:
                         is_half_time = False
@@ -326,6 +347,7 @@ while not game_over:
         show_player1(player1_x, player1_y)
         show_player2(player2_x, player2_y)
         show_score(score_text_x, score_text_y)
+        show_half_name()
     elif is_paused:
         show_paused_screen(score_1, score_2, counter)
     elif is_half_time:
