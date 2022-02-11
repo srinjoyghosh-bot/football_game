@@ -17,6 +17,12 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
 background = pygame.image.load("ground.png")
 
+# Teams
+team_name_a = "Team A"
+team_color_a = RED
+team_name_b = "Team B"
+team_color_b = BLUE
+
 # Score board
 score_1 = 0
 score_2 = 0
@@ -146,6 +152,16 @@ def show_half_name():
         screen.blit(half_name, (0, 0))
 
 
+def show_team_names():
+    global team_name_a, team_name_b
+    team_1 = score_font.render(team_name_a, True, WHITE)
+    pygame.draw.rect(screen, BLACK, (WIDTH - 140, HEIGHT - GROUND_HEIGHT - 30, 200, 30))
+    screen.blit(team_1, (WIDTH - 140, HEIGHT - GROUND_HEIGHT - 30))
+    team_2 = score_font.render(team_name_b, True, WHITE)
+    pygame.draw.rect(screen, BLACK, (20, HEIGHT - GROUND_HEIGHT - 30, 200, 30))
+    screen.blit(team_2, (20, HEIGHT - GROUND_HEIGHT - 30))
+
+
 def get_time_text(time_left):
     min_left = time_left // 60
     sec_left = time_left - (60 * min_left)
@@ -176,6 +192,8 @@ def show_paused_screen(score_a, score_b, time_left):
     pygame.draw.rect(screen, BLACK, (score_text_x - 20, score_text_y + 40, 110, 30))  # to hide time
     pygame.draw.rect(screen, BLACK, (score_text_x, score_text_y, 100, 30))  # to hide score
     pygame.draw.rect(screen, BLACK, (0, 0, 200, 30))  # to hide half name
+    pygame.draw.rect(screen, BLACK, (WIDTH - 140, HEIGHT - GROUND_HEIGHT - 30, 200, 30))  # hide team name
+    pygame.draw.rect(screen, BLACK, (20, HEIGHT - GROUND_HEIGHT - 30, 200, 30))  # hide team name
 
     screen.blit(pause_text, (WIDTH / 2 - 250, HEIGHT - GROUND_HEIGHT + GROUND_HEIGHT / 2 - 150))
     screen.blit(score_text, (WIDTH / 2 - 65, HEIGHT - GROUND_HEIGHT + GROUND_HEIGHT / 2 - 80))
@@ -196,6 +214,8 @@ def show_half_end_screen(score_a, score_b):
     pygame.draw.rect(screen, BLACK, (score_text_x - 20, score_text_y + 40, 110, 30))  # to hide time
     pygame.draw.rect(screen, BLACK, (score_text_x, score_text_y, 100, 30))  # to hide score
     pygame.draw.rect(screen, BLACK, (0, 0, 200, 30))  # to hide half name
+    pygame.draw.rect(screen, BLACK, (WIDTH - 140, HEIGHT - GROUND_HEIGHT - 30, 200, 30))  # hide team name
+    pygame.draw.rect(screen, BLACK, (20, HEIGHT - GROUND_HEIGHT - 30, 200, 30))  # hide team name
 
 
 def check_winner(score_a, score_b):
@@ -220,6 +240,8 @@ def show_full_time_screen(score_a, score_b):
     pygame.draw.rect(screen, BLACK, (score_text_x - 20, score_text_y + 40, 110, 30))  # to hide time
     pygame.draw.rect(screen, BLACK, (score_text_x, score_text_y, 100, 30))  # to hide score
     pygame.draw.rect(screen, BLACK, (0, 0, 200, 30))  # to hide half name
+    pygame.draw.rect(screen, BLACK, (WIDTH - 140, HEIGHT - GROUND_HEIGHT - 30, 200, 30))  # hide team name
+    pygame.draw.rect(screen, BLACK, (20, HEIGHT - GROUND_HEIGHT - 30, 200, 30))  # hide team name
 
 
 while not game_over:
@@ -348,6 +370,7 @@ while not game_over:
         show_player2(player2_x, player2_y)
         show_score(score_text_x, score_text_y)
         show_half_name()
+        show_team_names()
     elif is_paused:
         show_paused_screen(score_1, score_2, counter)
     elif is_half_time:
