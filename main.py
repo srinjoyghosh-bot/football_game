@@ -11,6 +11,7 @@ BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
 WHITE = (255, 255, 255)
+GAME_NAME = "AirBall"
 
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -32,7 +33,7 @@ score_text_y = HEIGHT - GROUND_HEIGHT - 80
 
 # countdown clock
 clock = pygame.time.Clock()
-counter = 180
+counter = 5
 timer_event = pygame.USEREVENT + 1
 pygame.time.set_timer(timer_event, 1000)
 
@@ -61,6 +62,7 @@ is_paused = False
 is_first_half = True
 is_half_time = False
 is_full_time = False
+is_start_screen = True
 
 
 def reset_player_conditions():
@@ -97,7 +99,7 @@ def reset_game_conditions():
     is_full_time = False
     score_1 = 0
     score_2 = 0
-    counter = 180
+    counter = 5
 
 
 def show_ball(x, y):
@@ -184,10 +186,12 @@ def show_paused_screen(score_a, score_b, time_left):
     pause_text_string = "GAME PAUSED !!"
     score_text_string = f"{score_b} - {score_a}"
     resume_text_string = "Press SPACE to resume game"
+    quit_text_string = "Press Q to quit game"
     pause_text = pause_text_font.render(pause_text_string, True, BLACK)
     score_text = pause_text_font.render(score_text_string, True, BLACK)
     time_text = pause_text_font.render(time_text_string, True, BLACK)
     resume_text = score_font.render(resume_text_string, True, BLACK)
+    quit_text = score_font.render(quit_text_string, True, BLACK)
 
     pygame.draw.rect(screen, BLACK, (score_text_x - 20, score_text_y + 40, 110, 30))  # to hide time
     pygame.draw.rect(screen, BLACK, (score_text_x, score_text_y, 100, 30))  # to hide score
@@ -199,23 +203,35 @@ def show_paused_screen(score_a, score_b, time_left):
     screen.blit(score_text, (WIDTH / 2 - 65, HEIGHT - GROUND_HEIGHT + GROUND_HEIGHT / 2 - 80))
     screen.blit(time_text, (WIDTH / 2 - 110, HEIGHT - GROUND_HEIGHT + GROUND_HEIGHT / 2 - 10))
     screen.blit(resume_text, (WIDTH / 2 - 200, HEIGHT - GROUND_HEIGHT + GROUND_HEIGHT / 2 + 80))
+    screen.blit(quit_text, (WIDTH / 2 - 160, HEIGHT - GROUND_HEIGHT + GROUND_HEIGHT / 2 + 120))
 
 
 def show_half_end_screen(score_a, score_b):
     pause_text_string = "HALF TIME !!"
     score_text_string = f"{score_b} - {score_a}"
     resume_text_string = "Press SPACE to start 2nd Half"
+    quit_text_string = "Press Q to quit game"
     pause_text = pause_text_font.render(pause_text_string, True, BLACK)
     score_text = pause_text_font.render(score_text_string, True, BLACK)
     resume_text = score_font.render(resume_text_string, True, BLACK)
+    quit_text = score_font.render(quit_text_string, True, BLACK)
     screen.blit(pause_text, (WIDTH / 2 - 180, HEIGHT - GROUND_HEIGHT + GROUND_HEIGHT / 2 - 150))
     screen.blit(score_text, (WIDTH / 2 - 65, HEIGHT - GROUND_HEIGHT + GROUND_HEIGHT / 2 - 80))
     screen.blit(resume_text, (WIDTH / 2 - 200, HEIGHT - GROUND_HEIGHT + GROUND_HEIGHT / 2 - 10))
+    screen.blit(quit_text, (WIDTH / 2 - 160, HEIGHT - GROUND_HEIGHT + GROUND_HEIGHT / 2 + 30))
     pygame.draw.rect(screen, BLACK, (score_text_x - 20, score_text_y + 40, 110, 30))  # to hide time
     pygame.draw.rect(screen, BLACK, (score_text_x, score_text_y, 100, 30))  # to hide score
     pygame.draw.rect(screen, BLACK, (0, 0, 200, 30))  # to hide half name
     pygame.draw.rect(screen, BLACK, (WIDTH - 140, HEIGHT - GROUND_HEIGHT - 30, 200, 30))  # hide team name
     pygame.draw.rect(screen, BLACK, (20, HEIGHT - GROUND_HEIGHT - 30, 200, 30))  # hide team name
+
+
+def show_start_screen():
+    screen.fill(BLACK)
+    game_name = pause_text_font.render(GAME_NAME, True, BLUE)
+    start_game_text = score_font.render("Press P to play game", True, WHITE)
+    screen.blit(game_name, (WIDTH / 2 - 100, HEIGHT / 2 - 60))
+    screen.blit(start_game_text, (WIDTH / 2 - 160, HEIGHT / 2 + 20))
 
 
 def check_winner(score_a, score_b):
@@ -231,12 +247,15 @@ def show_full_time_screen(score_a, score_b):
     winner_text_string = check_winner(score_a, score_b)
     score_text_string = f"{score_b} - {score_a}"
     restart_text_string = "Press R to restart match"
+    quit_text_string = "Press Q to quit game"
     winner_text = pause_text_font.render(winner_text_string, True, BLACK)
     score_text = pause_text_font.render(score_text_string, True, BLACK)
     restart_text = score_font.render(restart_text_string, True, BLACK)
+    quit_text = score_font.render(quit_text_string, True, BLACK)
     screen.blit(winner_text, (WIDTH / 2 - 200, HEIGHT - GROUND_HEIGHT + GROUND_HEIGHT / 2 - 150))
     screen.blit(score_text, (WIDTH / 2 - 65, HEIGHT - GROUND_HEIGHT + GROUND_HEIGHT / 2 - 80))
     screen.blit(restart_text, (WIDTH / 2 - 200, HEIGHT - GROUND_HEIGHT + GROUND_HEIGHT / 2 - 10))
+    screen.blit(quit_text, (WIDTH / 2 - 160, HEIGHT - GROUND_HEIGHT + GROUND_HEIGHT / 2 + 30))
     pygame.draw.rect(screen, BLACK, (score_text_x - 20, score_text_y + 40, 110, 30))  # to hide time
     pygame.draw.rect(screen, BLACK, (score_text_x, score_text_y, 100, 30))  # to hide score
     pygame.draw.rect(screen, BLACK, (0, 0, 200, 30))  # to hide half name
@@ -245,6 +264,7 @@ def show_full_time_screen(score_a, score_b):
 
 
 while not game_over:
+
     screen.blit(background, (0, 100))
     clock.tick(60)
     for event in pygame.event.get():
@@ -278,9 +298,9 @@ while not game_over:
                 player2_y_change = 0
             if event.key == pygame.K_SPACE:
                 if not is_paused:
-                    if not is_half_time and not is_full_time:
+                    if not is_half_time and not is_full_time and not is_start_screen:
                         is_paused = True
-                    else:
+                    elif is_half_time:
                         is_half_time = False
                 else:
                     is_paused = False
@@ -288,6 +308,19 @@ while not game_over:
                 reset_game_conditions()
                 reset_ball_conditions()
                 reset_player_conditions()
+            if event.key == pygame.K_p and is_start_screen:
+                is_start_screen = False
+            if event.key == pygame.K_q and not is_start_screen and (is_paused or is_half_time or is_full_time):
+                is_start_screen = True
+                reset_game_conditions()
+                reset_player_conditions()
+                reset_ball_conditions()
+                if is_paused:
+                    is_paused = False
+                if is_half_time:
+                    is_half_time = False
+                if is_full_time:
+                    is_full_time = False
         if event.type == timer_event:
             if counter > 0 and not is_paused:
                 show_time(counter, score_text_x - 20, score_text_y + 40)
@@ -303,10 +336,10 @@ while not game_over:
                 player2_y = (HEIGHT - GROUND_HEIGHT) + GROUND_HEIGHT / 2
                 is_first_half = False
                 is_half_time = True
-                counter = 180
+                counter = 5
             elif counter == 0 and not is_paused and not is_first_half:
                 is_full_time = True
-            if not is_paused and not is_half_time and not is_full_time:
+            if not is_paused and not is_half_time and not is_full_time and not is_start_screen:
                 counter -= 1
 
     collision1 = is_ball_collision(player1_x, player1_y, ball_x, ball_y)
@@ -321,7 +354,7 @@ while not game_over:
             ball_x_change *= -1
         if (ball_x > player2_x and ball_y < player2_y) or (ball_x < player2_x and ball_y > player2_y):
             ball_y_change *= -1
-    if not is_paused and not is_half_time and not is_full_time:
+    if not is_paused and not is_half_time and not is_full_time and not is_start_screen:
         player1_x += player1_x_change
         if player1_x <= WIDTH / 2 + PLAYER_RADIUS:
             player1_x = WIDTH / 2 + PLAYER_RADIUS
@@ -377,5 +410,7 @@ while not game_over:
         show_half_end_screen(score_1, score_2)
     elif is_full_time:
         show_full_time_screen(score_1, score_2)
+    elif is_start_screen:
+        show_start_screen()
 
     pygame.display.update()
