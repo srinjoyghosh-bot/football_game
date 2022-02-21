@@ -6,7 +6,7 @@ HEIGHT = 600
 GROUND_HEIGHT = 500
 WIDTH = 800
 PLAYER_RADIUS = 32
-BALL_RADIUS = 16
+BALL_RADIUS = 20
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
@@ -33,7 +33,7 @@ score_text_y = HEIGHT - GROUND_HEIGHT - 80
 
 # countdown clock
 clock = pygame.time.Clock()
-counter = 5
+counter = 60
 timer_event = pygame.USEREVENT + 1
 pygame.time.set_timer(timer_event, 1000)
 
@@ -99,27 +99,38 @@ def reset_game_conditions():
     is_full_time = False
     score_1 = 0
     score_2 = 0
-    counter = 5
+    counter = 60
 
 
 def show_ball(x, y):
-    pygame.draw.circle(screen, (0, 0, 0), (x, y), 20)
+    pygame.draw.circle(screen, (0, 0, 0), (x, y), BALL_RADIUS)
 
 
 def show_player1(x, y):
-    pygame.draw.circle(screen, RED, (x, y), 32)
+    pygame.draw.circle(screen, RED, (x, y), PLAYER_RADIUS)
 
 
 def show_player2(x, y):
-    pygame.draw.circle(screen, BLUE, (x, y), 32)
+    pygame.draw.circle(screen, BLUE, (x, y), PLAYER_RADIUS)
 
 
-def is_ball_collision(x1, y1, x2, y2):
-    distance = math.sqrt((math.pow(x1 - x2, 2)) + math.pow(y1 - y2, 2))
-    if distance <= BALL_RADIUS + PLAYER_RADIUS:
-        return True
+def is_ball_collision(x1, y1, x2, y2, mx2, my2):
+    # distance = math.sqrt((math.pow(x1 - x2, 2)) + math.pow(y1 - y2, 2))
+    # if distance <= BALL_RADIUS + PLAYER_RADIUS:
+    #     return True
+    # else:
+    #     return False
+    global ball_x_change, ball_y_change
+    v1 = pygame.math.Vector2(x1, y1)
+    v2 = pygame.math.Vector2(x2, y2)
+    nv = v2 - v1
+    m1 = pygame.math.Vector2(ball_x_change, ball_y_change).reflect(nv)
+    m2 = pygame.math.Vector2(mx2, my2).reflect(nv)
+    if v1.distance_to(v2) <= BALL_RADIUS + PLAYER_RADIUS:
+        ball_x_change, ball_y_change = m1.x, m1.y
+        return True, m2.x, m2.y
     else:
-        return False
+        return False, -1, -1
 
 
 def check_goal(x, y):
@@ -187,6 +198,7 @@ def show_paused_screen(score_a, score_b, time_left):
     score_text_string = f"{score_b} - {score_a}"
     resume_text_string = "Press SPACE to resume game"
     quit_text_string = "Press Q to quit game"
+
     pause_text = pause_text_font.render(pause_text_string, True, BLACK)
     score_text = pause_text_font.render(score_text_string, True, BLACK)
     time_text = pause_text_font.render(time_text_string, True, BLACK)
@@ -211,14 +223,17 @@ def show_half_end_screen(score_a, score_b):
     score_text_string = f"{score_b} - {score_a}"
     resume_text_string = "Press SPACE to start 2nd Half"
     quit_text_string = "Press Q to quit game"
+
     pause_text = pause_text_font.render(pause_text_string, True, BLACK)
     score_text = pause_text_font.render(score_text_string, True, BLACK)
     resume_text = score_font.render(resume_text_string, True, BLACK)
     quit_text = score_font.render(quit_text_string, True, BLACK)
+
     screen.blit(pause_text, (WIDTH / 2 - 180, HEIGHT - GROUND_HEIGHT + GROUND_HEIGHT / 2 - 150))
     screen.blit(score_text, (WIDTH / 2 - 65, HEIGHT - GROUND_HEIGHT + GROUND_HEIGHT / 2 - 80))
     screen.blit(resume_text, (WIDTH / 2 - 200, HEIGHT - GROUND_HEIGHT + GROUND_HEIGHT / 2 - 10))
     screen.blit(quit_text, (WIDTH / 2 - 160, HEIGHT - GROUND_HEIGHT + GROUND_HEIGHT / 2 + 30))
+
     pygame.draw.rect(screen, BLACK, (score_text_x - 20, score_text_y + 40, 110, 30))  # to hide time
     pygame.draw.rect(screen, BLACK, (score_text_x, score_text_y, 100, 30))  # to hide score
     pygame.draw.rect(screen, BLACK, (0, 0, 200, 30))  # to hide half name
@@ -231,7 +246,7 @@ def show_start_screen():
     game_name = pause_text_font.render(GAME_NAME, True, BLUE)
     start_game_text = score_font.render("Press P to play game", True, WHITE)
     screen.blit(game_name, (WIDTH / 2 - 100, HEIGHT / 2 - 60))
-    screen.blit(start_game_text, (WIDTH / 2 - 160, HEIGHT / 2 + 20))
+    screen.blit(start_game_text, (WIDTH / 2 - 160, HEIGHT / 2 + 40))
 
 
 def check_winner(score_a, score_b):
@@ -240,7 +255,7 @@ def check_winner(score_a, score_b):
     elif score_b > score_a:
         return "Team B WON !!"
     else:
-        return "MATCH TIED !!"
+        return "MATCH TIED Lol !!"
 
 
 def show_full_time_screen(score_a, score_b):
@@ -248,14 +263,17 @@ def show_full_time_screen(score_a, score_b):
     score_text_string = f"{score_b} - {score_a}"
     restart_text_string = "Press R to restart match"
     quit_text_string = "Press Q to quit game"
+
     winner_text = pause_text_font.render(winner_text_string, True, BLACK)
     score_text = pause_text_font.render(score_text_string, True, BLACK)
     restart_text = score_font.render(restart_text_string, True, BLACK)
     quit_text = score_font.render(quit_text_string, True, BLACK)
+
     screen.blit(winner_text, (WIDTH / 2 - 200, HEIGHT - GROUND_HEIGHT + GROUND_HEIGHT / 2 - 150))
     screen.blit(score_text, (WIDTH / 2 - 65, HEIGHT - GROUND_HEIGHT + GROUND_HEIGHT / 2 - 80))
     screen.blit(restart_text, (WIDTH / 2 - 200, HEIGHT - GROUND_HEIGHT + GROUND_HEIGHT / 2 - 10))
     screen.blit(quit_text, (WIDTH / 2 - 160, HEIGHT - GROUND_HEIGHT + GROUND_HEIGHT / 2 + 30))
+
     pygame.draw.rect(screen, BLACK, (score_text_x - 20, score_text_y + 40, 110, 30))  # to hide time
     pygame.draw.rect(screen, BLACK, (score_text_x, score_text_y, 100, 30))  # to hide score
     pygame.draw.rect(screen, BLACK, (0, 0, 200, 30))  # to hide half name
@@ -336,24 +354,28 @@ while not game_over:
                 player2_y = (HEIGHT - GROUND_HEIGHT) + GROUND_HEIGHT / 2
                 is_first_half = False
                 is_half_time = True
-                counter = 5
+                counter = 60
             elif counter == 0 and not is_paused and not is_first_half:
                 is_full_time = True
             if not is_paused and not is_half_time and not is_full_time and not is_start_screen:
                 counter -= 1
 
-    collision1 = is_ball_collision(player1_x, player1_y, ball_x, ball_y)
-    if collision1:
-        if (ball_x < player1_x and ball_y > player1_y) or (ball_x > player1_x and ball_y < player1_y):
-            ball_y_change *= -1
-        if (ball_x > player1_x and ball_y > player1_y) or (ball_x < player1_x and ball_y < player1_y):
-            ball_x_change *= -1
-    collision2 = is_ball_collision(player2_x, player2_y, ball_x, ball_y)
-    if collision2:
-        if (ball_x > player2_x and ball_y > player2_y) or (ball_x < player2_x and ball_y < player2_y):
-            ball_x_change *= -1
-        if (ball_x > player2_x and ball_y < player2_y) or (ball_x < player2_x and ball_y > player2_y):
-            ball_y_change *= -1
+    collision1 = is_ball_collision(player1_x, player1_y, ball_x, ball_y, player1_x_change, player1_y_change)
+    if collision1[0]:
+        # if (ball_x < player1_x and ball_y > player1_y) or (ball_x > player1_x and ball_y < player1_y):
+        #     ball_y_change *= -1
+        # if (ball_x > player1_x and ball_y > player1_y) or (ball_x < player1_x and ball_y < player1_y):
+        #     ball_x_change *= -1
+        player1_x += collision1[1]
+        player1_y += collision1[2]
+    collision2 = is_ball_collision(player2_x, player2_y, ball_x, ball_y, player2_x_change, player2_y_change)
+    if collision2[0]:
+        #     if (ball_x > player2_x and ball_y > player2_y) or (ball_x < player2_x and ball_y < player2_y):
+        #         ball_x_change *= -1
+        #     if (ball_x > player2_x and ball_y < player2_y) or (ball_x < player2_x and ball_y > player2_y):
+        #         ball_y_change *= -1
+        player2_x += collision2[1]
+        player2_y += collision2[2]
     if not is_paused and not is_half_time and not is_full_time and not is_start_screen:
         player1_x += player1_x_change
         if player1_x <= WIDTH / 2 + PLAYER_RADIUS:
