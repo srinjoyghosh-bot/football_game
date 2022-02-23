@@ -1,4 +1,5 @@
 import pygame
+import pygame_textinput
 import math
 
 # Constants
@@ -10,19 +11,23 @@ BALL_RADIUS = 20
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
+YELLOW = (255, 255, 0)
+GREEN = (0, 255, 0)
 WHITE = (255, 255, 255)
 GAME_NAME = "AirBall"
+COLORS = [RED, BLUE, YELLOW, GREEN]
 
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
 background = pygame.image.load("ground.png")
+small_text_font = pygame.font.Font('freesansbold.ttf', 16)
 
 # Teams
 team_name_a = "Team A"
-team_color_a = RED
+team_color_a = 0
 team_name_b = "Team B"
-team_color_b = BLUE
+team_color_b = 1
 
 # Score board
 score_1 = 0
@@ -56,6 +61,25 @@ ball_x = WIDTH / 2
 ball_y = (HEIGHT - GROUND_HEIGHT) + GROUND_HEIGHT / 2
 ball_x_change = 6
 ball_y_change = 6
+
+# Enter names screen
+is_name_screen = False
+enter_team_a_name = True
+nameInput = pygame_textinput.TextInputVisualizer()
+# No arguments needed to get started
+textinput = pygame_textinput.TextInputVisualizer()
+
+# But more customization possible: Pass your own font object
+font = pygame.font.SysFont("Consolas", 55)
+# Create own manager with custom input validator
+manager = pygame_textinput.TextInputManager(validator=lambda input: len(input) <= 5)
+# Pass these to constructor
+textinput_custom = pygame_textinput.TextInputVisualizer(manager=manager, font_object=font)
+
+# Select team color screen
+is_color_screen = False
+selecting_team_a_color = True
+team_color_button_x = [WIDTH / 2 - 100, WIDTH / 2 - 20, WIDTH / 2 + 60, WIDTH / 2 + 140]
 
 game_over = False
 is_paused = False
@@ -107,11 +131,11 @@ def show_ball(x, y):
 
 
 def show_player1(x, y):
-    pygame.draw.circle(screen, RED, (x, y), PLAYER_RADIUS)
+    pygame.draw.circle(screen, COLORS[team_color_a], (x, y), PLAYER_RADIUS)
 
 
 def show_player2(x, y):
-    pygame.draw.circle(screen, BLUE, (x, y), PLAYER_RADIUS)
+    pygame.draw.circle(screen, COLORS[team_color_b], (x, y), PLAYER_RADIUS)
 
 
 def is_ball_collision(x1, y1, x2, y2, mx2, my2):
@@ -193,6 +217,7 @@ def show_time(time_left, x, y):
 
 
 def show_paused_screen(score_a, score_b, time_left):
+    screen.blit(background, (0, 100))
     time_text_string = get_time_text(time_left + 1)
     pause_text_string = "GAME PAUSED !!"
     score_text_string = f"{score_b} - {score_a}"
@@ -219,6 +244,7 @@ def show_paused_screen(score_a, score_b, time_left):
 
 
 def show_half_end_screen(score_a, score_b):
+    screen.blit(background, (0, 100))
     pause_text_string = "HALF TIME !!"
     score_text_string = f"{score_b} - {score_a}"
     resume_text_string = "Press SPACE to start 2nd Half"
@@ -249,6 +275,56 @@ def show_start_screen():
     screen.blit(start_game_text, (WIDTH / 2 - 160, HEIGHT / 2 + 40))
 
 
+def show_enter_names_screen():
+    screen.fill(BLACK)
+    title = pause_text_font.render('Enter team names', True, BLUE)
+    start_game_text = score_font.render("Press C to continue", True, WHITE)
+    team_a_name = score_font.render('Team A :', True, WHITE)
+    team_b_name = score_font.render('Team B :', True, WHITE)
+    limit = small_text_font.render('Use maximum 8 characters', True, BLUE)
+    screen.blit(title, (WIDTH / 2 - 280, 60))
+    screen.blit(start_game_text, (WIDTH / 2 - 130, HEIGHT - 40))
+    # screen.blit(team_a_name, (WIDTH - 300, HEIGHT / 2 - 60))
+    # screen.blit(team_b_name, (160, HEIGHT / 2 - 60))
+    screen.blit(limit, (WIDTH / 2 - 90, HEIGHT - 80))
+    # pygame.draw.rect(screen, WHITE, (WIDTH - 320, HEIGHT / 2, 180, 40))
+    # pygame.draw.rect(screen, WHITE, (140, HEIGHT / 2, 180, 40))
+    pygame.draw.rect(screen, WHITE, (WIDTH / 2 - 80, HEIGHT / 2, 180, 40))
+    if enter_team_a_name:
+        screen.blit(team_a_name, (WIDTH / 2 - 60, HEIGHT / 2 - 60))
+    else:
+        screen.blit(team_b_name, (WIDTH / 2 - 60, HEIGHT / 2 - 60))
+
+
+def show_select_color_screen():
+    screen.fill(BLACK)
+    title = pause_text_font.render('Select team color', True, BLUE)
+    # start_game_text = score_font.render("Press C to continue", True, WHITE)
+    team_a_name = score_font.render(f'{team_name_a} :', True, WHITE)
+    team_b_name = score_font.render(f'{team_name_b} :', True, WHITE)
+    # limit = small_text_font.render('Use maximum 8 characters', True, BLUE)
+    screen.blit(title, (WIDTH / 2 - 280, 60))
+    # screen.blit(start_game_text, (WIDTH / 2 - 130, HEIGHT - 40))
+    # screen.blit(team_a_name, (WIDTH - 300, HEIGHT / 2 - 60))
+    # screen.blit(team_b_name, (160, HEIGHT / 2 - 60))
+    # screen.blit(limit, (WIDTH / 2 - 90, HEIGHT - 80))
+    # pygame.draw.rect(screen, WHITE, (WIDTH - 320, HEIGHT / 2, 180, 40))
+    # pygame.draw.rect(screen, WHITE, (140, HEIGHT / 2, 180, 40))
+    # pygame.draw.rect(screen, WHITE, (WIDTH / 2 - 80, HEIGHT / 2, 180, 40))
+    # color_buttons = []
+    if selecting_team_a_color:
+        screen.blit(team_a_name, (WIDTH / 2 - 60, HEIGHT / 2 - 60))
+    else:
+        screen.blit(team_b_name, (WIDTH / 2 - 60, HEIGHT / 2 - 60))
+    for i in range(len(COLORS)):
+        pygame.draw.circle(screen, COLORS[i], (team_color_button_x[i], HEIGHT / 2 + 60), PLAYER_RADIUS)
+
+
+
+
+# def color_selected(x, y):
+
+
 def check_winner(score_a, score_b):
     if score_a > score_b:
         return "Team A WON !!"
@@ -259,6 +335,7 @@ def check_winner(score_a, score_b):
 
 
 def show_full_time_screen(score_a, score_b):
+    screen.blit(background, (0, 100))
     winner_text_string = check_winner(score_a, score_b)
     score_text_string = f"{score_b} - {score_a}"
     restart_text_string = "Press R to restart match"
@@ -282,10 +359,19 @@ def show_full_time_screen(score_a, score_b):
 
 
 while not game_over:
+    events = pygame.event.get()
 
-    screen.blit(background, (0, 100))
+    # # Feed it with events every frame
+    # textinput.update(events)
+    # textinput_custom.update(events)
+    #
+    # # Get its surface to blit onto the screen
+    # screen.blit(textinput.surface, (10, 10))
+    # screen.blit(textinput_custom.surface, (10, 50))
+
     clock.tick(60)
     for event in pygame.event.get():
+
         if event.type == pygame.QUIT:
             pygame.quit()
         if event.type == pygame.KEYDOWN:
@@ -316,7 +402,7 @@ while not game_over:
                 player2_y_change = 0
             if event.key == pygame.K_SPACE:
                 if not is_paused:
-                    if not is_half_time and not is_full_time and not is_start_screen:
+                    if not is_half_time and not is_full_time and not is_start_screen and not is_name_screen and not is_color_screen:
                         is_paused = True
                     elif is_half_time:
                         is_half_time = False
@@ -328,7 +414,17 @@ while not game_over:
                 reset_player_conditions()
             if event.key == pygame.K_p and is_start_screen:
                 is_start_screen = False
-            if event.key == pygame.K_q and not is_start_screen and (is_paused or is_half_time or is_full_time):
+                is_name_screen = True
+            if event.key == pygame.K_c:
+                if is_name_screen:
+                    if enter_team_a_name:
+                        enter_team_a_name = False
+                    else:
+                        enter_team_a_name = True
+                        is_name_screen = False
+                        is_color_screen = True
+            if event.key == pygame.K_q and not is_start_screen and not is_name_screen and not is_color_screen and (
+                    is_paused or is_half_time or is_full_time):
                 is_start_screen = True
                 reset_game_conditions()
                 reset_player_conditions()
@@ -341,6 +437,7 @@ while not game_over:
                     is_full_time = False
         if event.type == timer_event:
             if counter > 0 and not is_paused:
+                screen.fill(BLACK)
                 show_time(counter, score_text_x - 20, score_text_y + 40)
             elif counter == 0 and not is_paused and is_first_half:
 
@@ -357,8 +454,23 @@ while not game_over:
                 counter = 60
             elif counter == 0 and not is_paused and not is_first_half:
                 is_full_time = True
-            if not is_paused and not is_half_time and not is_full_time and not is_start_screen:
+            if not is_paused and not is_half_time and not is_full_time and not is_start_screen and not is_name_screen and not is_color_screen:
                 counter -= 1
+        if event.type == pygame.MOUSEBUTTONUP:
+            pos = pygame.mouse.get_pos()
+            if is_color_screen:
+                for i in range(len(team_color_button_x)):
+                    dist = math.hypot(team_color_button_x[i] - pos[0], HEIGHT / 2 + 60 - pos[1])
+                    if dist <= PLAYER_RADIUS:
+                        if selecting_team_a_color:
+                            team_color_a = i
+                            selecting_team_a_color = False
+                            print('A: ' + str(COLORS[i]))
+                        else:
+                            team_color_b = i
+                            selecting_team_a_color = True
+                            is_color_screen = False
+                            print('B: ' + str(COLORS[i]))
 
     collision1 = is_ball_collision(player1_x, player1_y, ball_x, ball_y, player1_x_change, player1_y_change)
     if collision1[0]:
@@ -376,7 +488,8 @@ while not game_over:
         #         ball_y_change *= -1
         player2_x += collision2[1]
         player2_y += collision2[2]
-    if not is_paused and not is_half_time and not is_full_time and not is_start_screen:
+    if not is_paused and not is_half_time and not is_full_time and not is_start_screen and not is_name_screen and not is_color_screen:
+        screen.blit(background, (0, 100))
         player1_x += player1_x_change
         if player1_x <= WIDTH / 2 + PLAYER_RADIUS:
             player1_x = WIDTH / 2 + PLAYER_RADIUS
@@ -434,5 +547,17 @@ while not game_over:
         show_full_time_screen(score_1, score_2)
     elif is_start_screen:
         show_start_screen()
+    elif is_name_screen:
+        show_enter_names_screen()
+        # events = pygame.event.get()
+        # for event in events:
+        #     nameInput.update(event)
+        #     screen.blit(nameInput.surface, (WIDTH / 2 - 80, HEIGHT / 2))
+        #     pygame.display.update()
+    elif is_color_screen:
+        show_select_color_screen()
 
+    # events = pygame.event.get()
+    # nameInput.update(events)
+    # screen.blit(nameInput.surface, (WIDTH / 2 - 80, HEIGHT / 2))
     pygame.display.update()
