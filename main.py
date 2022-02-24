@@ -1,6 +1,9 @@
+import math
+
 import pygame
 import pygame_textinput
-import math
+import pygame_widgets
+from pygame_widgets.button import ButtonArray
 
 # Constants
 HEIGHT = 600
@@ -81,12 +84,37 @@ is_color_screen = False
 selecting_team_a_color = True
 team_color_button_x = [WIDTH / 2 - 100, WIDTH / 2 - 20, WIDTH / 2 + 60, WIDTH / 2 + 140]
 
+# Select half-length screen
+is_half_length_screen = False
+# buttonArray = ButtonArray(
+#     # Mandatory Parameters
+#     screen,  # Surface to place button array on
+#     int(WIDTH / 2 - 150),  # X-coordinate
+#     int(HEIGHT / 2 - 100),  # Y-coordinate
+#     300,  # Width
+#     300,  # Height
+#     (1, 3),  # Shape: 2 buttons wide, 2 buttons tall
+#     border=1,  # Distance between buttons and edge of array
+#     texts=('1 Minute', '2 Minute', '3 Minute'),
+#     hoverColours=(BLUE, BLUE, BLUE),
+#     inactiveColours=(BLACK, BLACK, BLACK),
+#     textColours=(WHITE, WHITE, WHITE),
+#     onClicks=(lambda: set_half_length(60), lambda: set_half_length(120), lambda: set_half_length(180))
+# )
+
 game_over = False
 is_paused = False
 is_first_half = True
 is_half_time = False
 is_full_time = False
 is_start_screen = True
+
+
+def set_half_length(time):
+    global counter, is_half_length_screen
+    counter = time
+    is_half_length_screen = False
+    print(counter)
 
 
 def reset_player_conditions():
@@ -320,9 +348,26 @@ def show_select_color_screen():
         pygame.draw.circle(screen, COLORS[i], (team_color_button_x[i], HEIGHT / 2 + 60), PLAYER_RADIUS)
 
 
-
-
-# def color_selected(x, y):
+def show_select_half_length_screen():
+    buttonArray = ButtonArray(
+        # Mandatory Parameters
+        screen,  # Surface to place button array on
+        int(WIDTH / 2 - 150),  # X-coordinate
+        int(HEIGHT / 2 - 100),  # Y-coordinate
+        300,  # Width
+        300,  # Height
+        (1, 3),  # Shape: 2 buttons wide, 2 buttons tall
+        border=1,  # Distance between buttons and edge of array
+        texts=('1 Minute', '2 Minute', '3 Minute'),
+        hoverColours=(BLUE, BLUE, BLUE),
+        inactiveColours=(BLACK, BLACK, BLACK),
+        textColours=(WHITE, WHITE, WHITE),
+        onClicks=(lambda: set_half_length(60), lambda: set_half_length(120), lambda: set_half_length(180))
+    )
+    screen.fill(BLACK)
+    title = pause_text_font.render('Select Half Length', True, BLUE)
+    screen.blit(title, (WIDTH / 2 - 280, 60))
+    buttonArray.draw()
 
 
 def check_winner(score_a, score_b):
@@ -402,7 +447,7 @@ while not game_over:
                 player2_y_change = 0
             if event.key == pygame.K_SPACE:
                 if not is_paused:
-                    if not is_half_time and not is_full_time and not is_start_screen and not is_name_screen and not is_color_screen:
+                    if not is_half_time and not is_full_time and not is_start_screen and not is_name_screen and not is_color_screen and not is_half_length_screen:
                         is_paused = True
                     elif is_half_time:
                         is_half_time = False
@@ -423,7 +468,7 @@ while not game_over:
                         enter_team_a_name = True
                         is_name_screen = False
                         is_color_screen = True
-            if event.key == pygame.K_q and not is_start_screen and not is_name_screen and not is_color_screen and (
+            if event.key == pygame.K_q and not is_start_screen and not is_name_screen and not is_color_screen and not is_half_length_screen and (
                     is_paused or is_half_time or is_full_time):
                 is_start_screen = True
                 reset_game_conditions()
@@ -454,7 +499,7 @@ while not game_over:
                 counter = 60
             elif counter == 0 and not is_paused and not is_first_half:
                 is_full_time = True
-            if not is_paused and not is_half_time and not is_full_time and not is_start_screen and not is_name_screen and not is_color_screen:
+            if not is_paused and not is_half_time and not is_full_time and not is_start_screen and not is_name_screen and not is_color_screen and not is_half_length_screen:
                 counter -= 1
         if event.type == pygame.MOUSEBUTTONUP:
             pos = pygame.mouse.get_pos()
@@ -470,6 +515,7 @@ while not game_over:
                             team_color_b = i
                             selecting_team_a_color = True
                             is_color_screen = False
+                            is_half_length_screen = True
                             print('B: ' + str(COLORS[i]))
 
     collision1 = is_ball_collision(player1_x, player1_y, ball_x, ball_y, player1_x_change, player1_y_change)
@@ -488,7 +534,7 @@ while not game_over:
         #         ball_y_change *= -1
         player2_x += collision2[1]
         player2_y += collision2[2]
-    if not is_paused and not is_half_time and not is_full_time and not is_start_screen and not is_name_screen and not is_color_screen:
+    if not is_paused and not is_half_time and not is_full_time and not is_start_screen and not is_name_screen and not is_color_screen and not is_half_length_screen:
         screen.blit(background, (0, 100))
         player1_x += player1_x_change
         if player1_x <= WIDTH / 2 + PLAYER_RADIUS:
@@ -556,8 +602,12 @@ while not game_over:
         #     pygame.display.update()
     elif is_color_screen:
         show_select_color_screen()
+    elif is_half_length_screen:
+        show_select_half_length_screen()
+        pygame_widgets.update(events)
 
     # events = pygame.event.get()
     # nameInput.update(events)
     # screen.blit(nameInput.surface, (WIDTH / 2 - 80, HEIGHT / 2))
+
     pygame.display.update()
