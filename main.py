@@ -1,7 +1,6 @@
 import math
 
 import pygame
-import pygame_textinput
 import pygame_widgets
 from pygame_widgets.button import ButtonArray
 
@@ -42,6 +41,7 @@ score_text_y = HEIGHT - GROUND_HEIGHT - 80
 # countdown clock
 clock = pygame.time.Clock()
 counter = 60
+half_length = 60
 timer_event = pygame.USEREVENT + 1
 pygame.time.set_timer(timer_event, 1000)
 
@@ -68,16 +68,38 @@ ball_y_change = 6
 # Enter names screen
 is_name_screen = False
 enter_team_a_name = True
-nameInput = pygame_textinput.TextInputVisualizer()
-# No arguments needed to get started
-textinput = pygame_textinput.TextInputVisualizer()
+color_inactive = pygame.Color('lightskyblue3')
+color_active = pygame.Color('dodgerblue2')
+color = color_inactive
+active = False
+text = ''
+input_box = pygame.Rect(WIDTH / 2 - 80, HEIGHT / 2, 180, 40)
 
-# But more customization possible: Pass your own font object
-font = pygame.font.SysFont("Consolas", 55)
-# Create own manager with custom input validator
-manager = pygame_textinput.TextInputManager(validator=lambda input: len(input) <= 5)
-# Pass these to constructor
-textinput_custom = pygame_textinput.TextInputVisualizer(manager=manager, font_object=font)
+
+# textbox = TextBox(screen, 100, 100, 800, 80, fontSize=50,
+#                   borderColour=(255, 0, 0), textColour=(0, 200, 0),
+#                   onSubmit=lambda: set_team_name(enter_team_a_name), radius=10, borderThickness=5,
+#                   placeholderText='Enter name')
+
+
+def set_team_name(textbox, is_team_a):
+    global team_name_a, team_name_b
+    if is_team_a:
+        team_name_a = textbox.getText()
+    else:
+        team_name_b = textbox.getText()
+
+
+# nameInput = pygame_textinput.TextInputVisualizer()
+# # No arguments needed to get started
+# textinput = pygame_textinput.TextInputVisualizer()
+#
+# # But more customization possible: Pass your own font object
+# font = pygame.font.SysFont("Consolas", 55)
+# # Create own manager with custom input validator
+# manager = pygame_textinput.TextInputManager(validator=lambda input: len(input) <= 5)
+# # Pass these to constructor
+# textinput_custom = pygame_textinput.TextInputVisualizer(manager=manager, font_object=font)
 
 # Select team color screen
 is_color_screen = False
@@ -111,8 +133,9 @@ is_start_screen = True
 
 
 def set_half_length(time):
-    global counter, is_half_length_screen
+    global counter, is_half_length_screen, half_length
     counter = time
+    half_length = time
     is_half_length_screen = False
     print(counter)
 
@@ -304,24 +327,42 @@ def show_start_screen():
 
 
 def show_enter_names_screen():
+    global team_name_a, team_name_b
     screen.fill(BLACK)
     title = pause_text_font.render('Enter team names', True, BLUE)
-    start_game_text = score_font.render("Press C to continue", True, WHITE)
+    start_game_text = score_font.render("Press ENTER to continue", True, WHITE)
     team_a_name = score_font.render('Team A :', True, WHITE)
     team_b_name = score_font.render('Team B :', True, WHITE)
-    limit = small_text_font.render('Use maximum 8 characters', True, BLUE)
+    limit = small_text_font.render('Use maximum 6 characters', True, BLUE)
     screen.blit(title, (WIDTH / 2 - 280, 60))
-    screen.blit(start_game_text, (WIDTH / 2 - 130, HEIGHT - 40))
+    screen.blit(start_game_text, (WIDTH / 2 - 180, HEIGHT - 40))
     # screen.blit(team_a_name, (WIDTH - 300, HEIGHT / 2 - 60))
     # screen.blit(team_b_name, (160, HEIGHT / 2 - 60))
     screen.blit(limit, (WIDTH / 2 - 90, HEIGHT - 80))
     # pygame.draw.rect(screen, WHITE, (WIDTH - 320, HEIGHT / 2, 180, 40))
     # pygame.draw.rect(screen, WHITE, (140, HEIGHT / 2, 180, 40))
-    pygame.draw.rect(screen, WHITE, (WIDTH / 2 - 80, HEIGHT / 2, 180, 40))
+
+    # textbox = TextBox(screen, int(WIDTH / 2 - 80), int(HEIGHT / 2), 180, 40, fontSize=30,
+    #                   borderColour=(255, 0, 0), textColour=(0, 200, 0),
+    #                   onSubmit=lambda: set_team_name(textbox, enter_team_a_name), radius=10, borderThickness=5,
+    #                   placeholderText='Enter name')
+    # screen.blit(textinput.surface, (WIDTH / 2 - 80, HEIGHT / 2))
+    # pygame_widgets.update(kb_events)
+    txt_surface = score_font.render(text, True, color)
+    width = max(180, txt_surface.get_width() + 10)
+    input_box.w = width
+    # Blit the text.
+    screen.blit(txt_surface, (input_box.x + 5, input_box.y + 5))
+    # Blit the input_box rect.
+    pygame.draw.rect(screen, color, input_box, 2)
     if enter_team_a_name:
         screen.blit(team_a_name, (WIDTH / 2 - 60, HEIGHT / 2 - 60))
+        # showTextBox(nameTextBoxA)
+        # team_name_a = textBoxInput(nameTextBoxA)
     else:
         screen.blit(team_b_name, (WIDTH / 2 - 60, HEIGHT / 2 - 60))
+        # showTextBox(nameTextBoxB)
+        # team_name_b = textBoxInput(nameTextBoxB)
 
 
 def show_select_color_screen():
@@ -460,14 +501,28 @@ while not game_over:
             if event.key == pygame.K_p and is_start_screen:
                 is_start_screen = False
                 is_name_screen = True
-            if event.key == pygame.K_c:
+            if event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER:
                 if is_name_screen:
                     if enter_team_a_name:
                         enter_team_a_name = False
+                        team_name_a = text
+                        text = ''
+                        print('A: ' + team_name_a)
                     else:
                         enter_team_a_name = True
+                        team_name_b = text
+                        text = ''
+                        print('B: ' + team_name_b)
                         is_name_screen = False
                         is_color_screen = True
+            if is_name_screen:
+                if active:
+                    if event.key == pygame.K_BACKSPACE:
+                        text = text[:-1]
+                    else:
+                        if len(text) < 6:
+                            text += event.unicode
+
             if event.key == pygame.K_q and not is_start_screen and not is_name_screen and not is_color_screen and not is_half_length_screen and (
                     is_paused or is_half_time or is_full_time):
                 is_start_screen = True
@@ -496,7 +551,7 @@ while not game_over:
                 player2_y = (HEIGHT - GROUND_HEIGHT) + GROUND_HEIGHT / 2
                 is_first_half = False
                 is_half_time = True
-                counter = 60
+                counter = half_length
             elif counter == 0 and not is_paused and not is_first_half:
                 is_full_time = True
             if not is_paused and not is_half_time and not is_full_time and not is_start_screen and not is_name_screen and not is_color_screen and not is_half_length_screen:
@@ -517,6 +572,13 @@ while not game_over:
                             is_color_screen = False
                             is_half_length_screen = True
                             print('B: ' + str(COLORS[i]))
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if input_box.collidepoint(event.pos):
+                active = not active
+            else:
+                active = False
+            color = color_active if active else color_inactive
+        # textinput.update(event)
 
     collision1 = is_ball_collision(player1_x, player1_y, ball_x, ball_y, player1_x_change, player1_y_change)
     if collision1[0]:
@@ -609,5 +671,6 @@ while not game_over:
     # events = pygame.event.get()
     # nameInput.update(events)
     # screen.blit(nameInput.surface, (WIDTH / 2 - 80, HEIGHT / 2))
-
+    # textinput.update(events)
+    # pygame_widgets.update(events)
     pygame.display.update()
